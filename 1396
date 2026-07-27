@@ -1,0 +1,36 @@
+#include <string>
+#include <unordered_map>
+#include <utility>
+
+class UndergroundSystem {
+private:
+    // Maps customer id -> {checkInStation, checkInTime}
+    std::unordered_map<int, std::pair<std::string, int>> checkIns;
+    
+    // Maps "startStation->endStation" -> {totalTravelTime, tripCount}
+    std::unordered_map<std::string, std::pair<double, int>> routeStats;
+
+public:
+    UndergroundSystem() {}
+    
+    void checkIn(int id, std::string stationName, int t) {
+        checkIns[id] = {stationName, t};
+    }
+    
+    void checkOut(int id, std::string stationName, int t) {
+        auto [startStation, startTime] = checkIns[id];
+        checkIns.erase(id); // Clean up the check-in record
+        
+        std::string routeKey = startStation + "->" + stationName;
+        int travelTime = t - startTime;
+        
+        routeStats[routeKey].first += travelTime;
+        routeStats[routeKey].second += 1;
+    }
+    
+    double getAverageTime(std::string startStation, std::string endStation) {
+        std::string routeKey = startStation + "->" + endStation;
+        auto& [totalTime, count] = routeStats[routeKey];
+        return totalTime / count;
+    }
+};
